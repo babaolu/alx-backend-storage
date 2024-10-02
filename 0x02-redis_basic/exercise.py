@@ -57,7 +57,7 @@ class Cache:
 
     def get_str(self, key: str):
         """ Explicitly retrieving a string """
-        return self.get(key, lamda d: d.decode("utf-8"))
+        return self.get(key, lambda d: d.decode("utf-8"))
 
     def get_int(self, key: str):
         """ Explicitly retrieving an integer """
