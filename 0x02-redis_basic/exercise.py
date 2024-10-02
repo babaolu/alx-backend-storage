@@ -2,11 +2,11 @@
 """ This module implement a storage Cache class that interfaces with Redis """
 import redis
 from uuid import uuid4
-from typing import Callable, Optional, Any
+from typing import Callable, Optional, Any, Union
 from functools import wraps
 
 
-def count_calls(method: Callable) -> Callable:
+def count_calls(method: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """ Decorator function for keeping track of method call count """
     @wraps(method)
     def wrapper(self, *args, **kwds):
@@ -16,7 +16,7 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
-def call_history(method: Callable) -> Callable:
+def call_history(method: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """ Decorator function for tracking inputs and output histories """
     @wraps(method)
     def wrapper(self, *args, **kwds):
@@ -37,7 +37,7 @@ class Cache:
 
     @count_calls
     @call_history
-    def store(self, data: str | bytes | int | float) -> str:
+    def store(self, data: Union[str, bytes, int, float]) -> str:
         """ Storage function to Redis server """
         key = str(uuid4())
         if isinstance(data, bytes):
@@ -48,12 +48,20 @@ class Cache:
     @count_calls
     @call_history
     def get(self, key: str, fn: Optional[Callable[[Any],
-            Any]] = None) -> str | bytes | int | float:
+            Any]] = None) -> Union[str, bytes, int, float]:
         """ Retrieval function from Redis server """
         value = self._redis.get(key)
         if fn is None:
             return value
         return fn(value)
+
+    def get_str(self, key: str):
+        """ Explicitly retrieving a string """
+        return self.get(key, lamda d: d.decode("utf-8"))
+
+    def get_int(self, key: str):
+        """ Explicitly retrieving an integer """
+        return self.get(key, int)
 
 
 def replay(method: Callable) -> None:
