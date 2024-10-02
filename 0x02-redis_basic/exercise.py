@@ -6,7 +6,7 @@ from typing import Callable, Optional, Any, Union
 from functools import wraps
 
 
-def count_calls(method: Callable[[Any], Any]) -> Callable[[Any], Any]:
+def count_calls(method: Callable) -> Callable:
     """ Decorator function for keeping track of method call count """
     @wraps(method)
     def wrapper(self, *args, **kwds):
@@ -16,7 +16,7 @@ def count_calls(method: Callable[[Any], Any]) -> Callable[[Any], Any]:
     return wrapper
 
 
-def call_history(method: Callable[[Any], Any]) -> Callable[[Any], Any]:
+def call_history(method: Callable) -> Callable:
     """ Decorator function for tracking inputs and output histories """
     @wraps(method)
     def wrapper(self, *args, **kwds):
@@ -65,6 +65,7 @@ class Cache:
 
 
 def replay(method: Callable) -> None:
+    """ Displays the call and return history of method """
     rinst = redis.Redis()
     m_name = method.__qualname__
     count = rinst.get(method.__qualname__).decode("utf-8")
