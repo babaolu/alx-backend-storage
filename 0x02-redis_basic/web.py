@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+""" This module tracks number of times a url is accessed """
 import requests
 import redis
 from functools import wraps
@@ -15,21 +17,13 @@ def cache_with_count(method: Callable) -> Callable:
         cache_key = f"cached:{url}"
         count_key = f"count:{url}"
 
-        # Check if the content is already in the cache
         cached_content = r.get(cache_key)
         if cached_content:
-            # If cached, return the cached content (decoded to string)
             return cached_content.decode("utf-8")
 
-        # If not cached, call the original method (fetch page)
         result = method(url, *args, **kwargs)
-
-        # Cache the result and set expiration time to 10 seconds
         r.setex(cache_key, 10, result)
-
-        # Increment the access count for the URL
         r.incr(count_key)
-
         return result
     return wrapper
 
